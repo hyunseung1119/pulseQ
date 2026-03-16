@@ -118,7 +118,24 @@ services:
       - pipeline
       - full
 
-  # ===== Monitoring (Phase 5+) =====
+  # ===== Frontend (Phase 5+) =====
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: pulseq-frontend
+    ports:
+      - "5173:80"
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: "0.25"
+    profiles:
+      - frontend
+      - full
+
+  # ===== Monitoring (Phase 6+) =====
   prometheus:
     image: prom/prometheus:latest
     container_name: pulseq-prometheus
