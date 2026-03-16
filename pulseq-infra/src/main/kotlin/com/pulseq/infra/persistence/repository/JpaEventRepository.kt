@@ -11,4 +11,5 @@ interface JpaEventRepository : JpaRepository<EventEntity, UUID> {
     fun findByTenantIdAndSlug(tenantId: UUID, slug: String): EventEntity?
     fun findByTenantIdAndStatus(tenantId: UUID, status: EventStatus): List<EventEntity>
     fun countByTenantId(tenantId: UUID): Long
+    fun findByStatus(status: EventStatus): List<EventEntity>
 }

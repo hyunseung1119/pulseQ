@@ -13,4 +13,5 @@ interface EventRepository {
     suspend fun update(event: Event): Event
     suspend fun deleteById(id: UUID)
     suspend fun countByTenantId(tenantId: UUID): Long
+    suspend fun findAllByStatus(status: EventStatus): List<Event>
 }

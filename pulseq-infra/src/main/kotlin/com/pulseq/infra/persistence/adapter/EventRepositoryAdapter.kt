@@ -52,4 +52,8 @@ class EventRepositoryAdapter(
     override suspend fun countByTenantId(tenantId: UUID): Long = withContext(Dispatchers.IO) {
         jpaEventRepository.countByTenantId(tenantId)
     }
+
+    override suspend fun findAllByStatus(status: EventStatus): List<Event> = withContext(Dispatchers.IO) {
+        jpaEventRepository.findByStatus(status).map { it.toDomain() }
+    }
 }
