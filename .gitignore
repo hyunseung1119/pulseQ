@@ -1,0 +1,64 @@
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+*.swp
+*.swo
+
+# Kotlin/Java
+*.class
+*.jar
+*.war
+*.ear
+out/
+
+# Node
+node_modules/
+dist/
+.env.local
+.env.*.local
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+*.egg-info/
+.mypy_cache/
+
+# Environment
+.env
+*.env
+!env.example
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+docker-compose.override.yml
+
+# Logs
+*.log
+logs/
+
+# Test
+*.test.js.snap
+coverage/
+htmlcov/
+.pytest_cache/
+
+# ML Models (too large for git)
+*.pkl
+*.joblib
+*.h5
+*.pt
+*.onnx
