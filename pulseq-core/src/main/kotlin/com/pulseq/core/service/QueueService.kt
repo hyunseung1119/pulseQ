@@ -17,7 +17,8 @@ class QueueService(
     private val queuePort: QueuePort,
     private val eventRepository: EventRepository,
     private val queueEntryRepository: QueueEntryRepository,
-    private val eventPublisher: EventPublisher
+    private val eventPublisher: EventPublisher,
+    private val botDetectionService: BotDetectionService
 ) {
     private val secureRandom = SecureRandom()
 
@@ -38,6 +39,35 @@ class QueueService(
         }
         if (queuePort.isMember(eventId, userId)) {
             throw AlreadyInQueueException(userId, existingEntry?.queueTicket ?: "unknown")
+        }
+
+        // 봇 탐지 체크
+        if (event.botDetectionEnabled) {
+            val botResult = botDetectionService.checkBotScore(
+                eventId = eventId,
+                userId = userId,
+                ipAddress = ipAddress,
+                userAgent = userAgent,
+                fingerprint = fingerprint,
+                botScoreThreshold = event.botScoreThreshold.toDouble()
+            )
+            if (botResult.isBot) {
+                // 봇 차단 카운터 + Kafka 이벤트
+                eventRepository.update(event.copy(
+                    totalBotBlocked = event.totalBotBlocked + 1,
+                    updatedAt = Instant.now()
+                ))
+                eventPublisher.publish(QueueEventLog(
+                    eventId = eventId,
+                    userId = userId,
+                    eventType = QueueEventType.BOT_BLOCKED,
+                    payload = mapOf(
+                        "botScore" to botResult.botScore,
+                        "reasons" to botResult.topReasons.map { it.feature }
+                    )
+                ))
+                throw BotDetectedException(userId, botResult.botScore)
+            }
         }
 
         // 정원 초과 체크

@@ -4,6 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.pulseq.core.domain.EntryToken
 import com.pulseq.core.port.QueuePort
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.reactive.awaitFirstOrNull
+import kotlinx.coroutines.reactive.awaitSingle
+import kotlinx.coroutines.reactor.awaitSingleOrNull
 import kotlinx.coroutines.withContext
 import org.redisson.api.RedissonClient
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate
@@ -26,33 +29,31 @@ class RedisQueueAdapter(
 
     override suspend fun enqueue(eventId: UUID, userId: String, score: Double): Boolean {
         val ops = redisTemplate.opsForZSet()
-        val added = ops.add(queueKey(eventId), userId, score).block()
+        val added = ops.add(queueKey(eventId), userId, score).awaitSingleOrNull()
         return added == true
     }
 
     override suspend fun getPosition(eventId: UUID, userId: String): Long? {
         val ops = redisTemplate.opsForZSet()
-        return ops.rank(queueKey(eventId), userId).block()
+        return ops.rank(queueKey(eventId), userId).awaitSingleOrNull()
     }
 
     override suspend fun getQueueSize(eventId: UUID): Long {
         val ops = redisTemplate.opsForZSet()
-        return ops.size(queueKey(eventId)).block() ?: 0L
+        return ops.size(queueKey(eventId)).awaitSingle()
     }
 
     override suspend fun dequeueTop(eventId: UUID, count: Long): List<String> {
         val ops = redisTemplate.opsForZSet()
         val key = queueKey(eventId)
-
-        // ZPOPMIN으로 상위 N명 원자적으로 추출
-        val results = ops.popMin(key, count).collectList().block()
-        return results?.mapNotNull { it.value } ?: emptyList()
+        val results = ops.popMin(key, count).collectList().awaitSingle()
+        return results.mapNotNull { it.value }
     }
 
     override suspend fun remove(eventId: UUID, userId: String): Boolean {
         val ops = redisTemplate.opsForZSet()
-        val removed = ops.remove(queueKey(eventId), userId).block()
-        return (removed ?: 0L) > 0L
+        val removed = ops.remove(queueKey(eventId), userId).awaitSingle()
+        return removed > 0L
     }
 
     override suspend fun isMember(eventId: UUID, userId: String): Boolean {
@@ -69,12 +70,12 @@ class RedisQueueAdapter(
                 "expiresAt" to token.expiresAt.toString()
             )
         )
-        ops.set(entryTokenKey(token.token), json, Duration.ofSeconds(ttlSeconds)).block()
+        ops.set(entryTokenKey(token.token), json, Duration.ofSeconds(ttlSeconds)).awaitSingle()
     }
 
     override suspend fun getEntryToken(token: String): EntryToken? {
         val ops = redisTemplate.opsForValue()
-        val json = ops.get(entryTokenKey(token)).block() ?: return null
+        val json = ops.get(entryTokenKey(token)).awaitSingleOrNull() ?: return null
 
         val map = objectMapper.readValue(json, Map::class.java)
         return EntryToken(
@@ -86,7 +87,7 @@ class RedisQueueAdapter(
     }
 
     override suspend fun deleteEntryToken(token: String) {
-        redisTemplate.delete(entryTokenKey(token)).block()
+        redisTemplate.delete(entryTokenKey(token)).awaitSingle()
     }
 
     override suspend fun <T> withLock(
@@ -117,11 +118,11 @@ class RedisQueueAdapter(
             botScoreKey(eventId, userId),
             score.toString(),
             Duration.ofSeconds(ttlSeconds)
-        ).block()
+        ).awaitSingle()
     }
 
     override suspend fun getBotScore(eventId: UUID, userId: String): Double? {
         val ops = redisTemplate.opsForValue()
-        return ops.get(botScoreKey(eventId, userId)).block()?.toDoubleOrNull()
+        return ops.get(botScoreKey(eventId, userId)).awaitSingleOrNull()?.toDoubleOrNull()
     }
 }

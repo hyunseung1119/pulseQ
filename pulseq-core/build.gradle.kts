@@ -18,6 +18,9 @@ dependencies {
     // Validation
     implementation("jakarta.validation:jakarta.validation-api")
 
+    // Logging
+    implementation("org.slf4j:slf4j-api")
+
     // Kotlin
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")

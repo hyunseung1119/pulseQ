@@ -32,3 +32,6 @@ class AlreadyInQueueException(userId: String, existingTicket: String) :
 
 class RateLimitExceededException :
     PulseQException("rate-limit-exceeded", "Rate limit exceeded", 429)
+
+class BotDetectedException(userId: String, score: Double) :
+    PulseQException("bot-detected", "User '$userId' blocked as bot (score: $score)", 403)
