@@ -6,7 +6,6 @@ import {
   Outlet,
 } from '@tanstack/react-router'
 import { AUTH_TOKEN_KEY } from '@/shared/lib/constants'
-import { getMe } from '@/features/auth/api'
 import { LandingPage } from './routes/index'
 import { LoginPage } from './routes/login'
 import { SignupPage } from './routes/signup'
@@ -53,15 +52,9 @@ const dashboardRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/dashboard',
   component: DashboardLayout,
-  beforeLoad: async () => {
+  beforeLoad: () => {
     const token = localStorage.getItem(AUTH_TOKEN_KEY)
     if (!token) {
-      throw redirect({ to: '/login' })
-    }
-    try {
-      await getMe()
-    } catch {
-      localStorage.removeItem(AUTH_TOKEN_KEY)
       throw redirect({ to: '/login' })
     }
   },

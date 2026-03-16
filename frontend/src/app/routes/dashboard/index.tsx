@@ -14,8 +14,8 @@ export function DashboardIndex() {
 
   const activeEvents = events.filter((e) => e.status === 'ACTIVE')
   const todayProcessed = events.reduce((sum, e) => sum + e.totalProcessed, 0)
-  const usageCount = tenant?.usage.currentMonth ?? 0
-  const usageLimit = tenant?.usage.limit ?? 0
+  const usageCount = tenant?.usage?.currentMonth ?? 0
+  const usageLimit = tenant?.usage?.limit ?? 0
 
   return (
     <div className="space-y-6">

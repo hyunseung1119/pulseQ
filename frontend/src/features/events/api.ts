@@ -71,8 +71,9 @@ export interface EventLogEntry {
 
 export async function listEvents(status?: string) {
   const params = status ? { status } : {}
-  const res = await apiClient.get<{ success: boolean; data: EventResponse[] }>('/events', { params })
-  return res.data.data
+  const res = await apiClient.get<{ success: boolean; data: { content: EventResponse[] } | EventResponse[] }>('/events', { params })
+  const data = res.data.data
+  return Array.isArray(data) ? data : data.content
 }
 
 export async function getEvent(eventId: string) {

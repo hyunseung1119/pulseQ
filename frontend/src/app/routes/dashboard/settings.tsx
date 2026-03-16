@@ -44,11 +44,11 @@ export function SettingsPage() {
         <div className="space-y-3">
           <div className="flex justify-between">
             <span className="text-sm text-muted-foreground">Monthly quota</span>
-            <span className="text-sm font-medium text-foreground">{tenant.usage.limit.toLocaleString()}</span>
+            <span className="text-sm font-medium text-foreground">{(tenant.usage?.limit ?? 0).toLocaleString()}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-sm text-muted-foreground">Used this month</span>
-            <span className="text-sm font-medium text-foreground">{tenant.usage.currentMonth.toLocaleString()}</span>
+            <span className="text-sm font-medium text-foreground">{(tenant.usage?.currentMonth ?? 0).toLocaleString()}</span>
           </div>
         </div>
       </Card>

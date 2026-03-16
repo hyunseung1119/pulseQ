@@ -22,7 +22,7 @@ interface TenantInfo {
   plan: string
   status: string
   apiKey: string
-  usage: { currentMonth: number; limit: number }
+  usage?: { currentMonth: number; limit: number } | null
   createdAt: string
 }
 

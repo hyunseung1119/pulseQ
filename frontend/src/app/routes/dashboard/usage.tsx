@@ -9,8 +9,8 @@ export function UsagePage() {
   const { data: tenant } = useQuery({ queryKey: ['me'], queryFn: getMe })
   const { data: events = [] } = useQuery({ queryKey: ['events'], queryFn: () => listEvents() })
 
-  const usageCount = tenant?.usage.currentMonth ?? 0
-  const usageLimit = tenant?.usage.limit ?? 1
+  const usageCount = tenant?.usage?.currentMonth ?? 0
+  const usageLimit = tenant?.usage?.limit ?? 1
   const usagePct = Math.min(100, Math.round((usageCount / usageLimit) * 100))
 
   const eventUsage = events
