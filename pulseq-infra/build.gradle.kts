@@ -26,6 +26,9 @@ dependencies {
     // Redisson (분산 락)
     implementation("org.redisson:redisson-spring-boot-starter:3.40.2")
 
+    // Kafka
+    implementation("org.springframework.kafka:spring-kafka")
+
     // Kotlin
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")

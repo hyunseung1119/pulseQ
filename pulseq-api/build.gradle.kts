@@ -27,6 +27,9 @@ dependencies {
     implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 
+    // Kafka
+    implementation("org.springframework.kafka:spring-kafka")
+
     // Monitoring
     implementation("io.micrometer:micrometer-registry-prometheus")
 

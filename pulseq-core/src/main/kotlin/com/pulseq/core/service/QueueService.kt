@@ -2,6 +2,7 @@ package com.pulseq.core.service
 
 import com.pulseq.core.domain.*
 import com.pulseq.core.exception.*
+import com.pulseq.core.port.EventPublisher
 import com.pulseq.core.port.EventRepository
 import com.pulseq.core.port.QueueEntryRepository
 import com.pulseq.core.port.QueuePort
@@ -15,7 +16,8 @@ import java.util.UUID
 class QueueService(
     private val queuePort: QueuePort,
     private val eventRepository: EventRepository,
-    private val queueEntryRepository: QueueEntryRepository
+    private val queueEntryRepository: QueueEntryRepository,
+    private val eventPublisher: EventPublisher
 ) {
     private val secureRandom = SecureRandom()
 
@@ -75,6 +77,19 @@ class QueueService(
             eventRepository.update(event.copy(
                 totalEntered = event.totalEntered + 1,
                 updatedAt = Instant.now()
+            ))
+
+            // Kafka 이벤트 발행
+            eventPublisher.publish(QueueEventLog(
+                eventId = eventId,
+                userId = userId,
+                eventType = QueueEventType.QUEUE_ENTERED,
+                payload = mapOf(
+                    "position" to position,
+                    "queueTicket" to ticket,
+                    "ipAddress" to ipAddress,
+                    "userAgent" to userAgent
+                )
             ))
 
             entry
@@ -167,6 +182,19 @@ class QueueService(
             updatedAt = Instant.now()
         ))
 
+        // Kafka 배치 이벤트 발행
+        eventPublisher.publishBatch(tokens.map { token ->
+            QueueEventLog(
+                eventId = eventId,
+                userId = token.userId,
+                eventType = QueueEventType.ENTRY_GRANTED,
+                payload = mapOf(
+                    "entryToken" to token.token,
+                    "expiresAt" to token.expiresAt.toString()
+                )
+            )
+        })
+
         return tokens
     }
 
@@ -178,6 +206,14 @@ class QueueService(
         if (entryToken.eventId != eventId) {
             throw EventNotFoundException("Entry token does not belong to this event")
         }
+
+        // Kafka 이벤트 발행
+        eventPublisher.publish(QueueEventLog(
+            eventId = eventId,
+            userId = entryToken.userId,
+            eventType = QueueEventType.ENTRY_VERIFIED,
+            payload = mapOf("token" to token)
+        ))
 
         return entryToken
     }
@@ -201,6 +237,17 @@ class QueueService(
         eventRepository.update(event.copy(
             totalAbandoned = event.totalAbandoned + 1,
             updatedAt = Instant.now()
+        ))
+
+        // Kafka 이벤트 발행
+        eventPublisher.publish(QueueEventLog(
+            eventId = eventId,
+            userId = entry.userId,
+            eventType = QueueEventType.QUEUE_LEFT,
+            payload = mapOf(
+                "queueTicket" to queueTicket,
+                "waitDurationMs" to (Instant.now().toEpochMilli() - entry.enteredAt.toEpochMilli())
+            )
         ))
 
         return updated
