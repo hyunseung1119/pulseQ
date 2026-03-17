@@ -56,4 +56,25 @@ class EventRepositoryAdapter(
     override suspend fun findAllByStatus(status: EventStatus): List<Event> = withContext(Dispatchers.IO) {
         jpaEventRepository.findByStatus(status).map { it.toDomain() }
     }
+
+    /** 원자적 카운터 증가 — SQL UPDATE SET col = col + 1 (lost update 방지) */
+    @org.springframework.transaction.annotation.Transactional
+    override suspend fun incrementTotalEntered(eventId: UUID): Unit = withContext(Dispatchers.IO) {
+        jpaEventRepository.incrementTotalEntered(eventId)
+    }
+
+    @org.springframework.transaction.annotation.Transactional
+    override suspend fun incrementTotalProcessed(eventId: UUID, count: Int): Unit = withContext(Dispatchers.IO) {
+        jpaEventRepository.incrementTotalProcessed(eventId, count)
+    }
+
+    @org.springframework.transaction.annotation.Transactional
+    override suspend fun incrementTotalAbandoned(eventId: UUID): Unit = withContext(Dispatchers.IO) {
+        jpaEventRepository.incrementTotalAbandoned(eventId)
+    }
+
+    @org.springframework.transaction.annotation.Transactional
+    override suspend fun incrementTotalBotBlocked(eventId: UUID): Unit = withContext(Dispatchers.IO) {
+        jpaEventRepository.incrementTotalBotBlocked(eventId)
+    }
 }

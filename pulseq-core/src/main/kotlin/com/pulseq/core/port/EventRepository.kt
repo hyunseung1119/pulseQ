@@ -14,4 +14,10 @@ interface EventRepository {
     suspend fun deleteById(id: UUID)
     suspend fun countByTenantId(tenantId: UUID): Long
     suspend fun findAllByStatus(status: EventStatus): List<Event>
+
+    /** 원자적 카운터 증가 — SQL UPDATE SET col = col + 1 (lost update 방지) */
+    suspend fun incrementTotalEntered(eventId: UUID)
+    suspend fun incrementTotalProcessed(eventId: UUID, count: Int)
+    suspend fun incrementTotalAbandoned(eventId: UUID)
+    suspend fun incrementTotalBotBlocked(eventId: UUID)
 }
